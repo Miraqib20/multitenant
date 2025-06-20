@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Multi-tenant Login</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body { font-family: Arial; padding: 2rem; background: #f4f4f4; }
+    .form-box { background: white; padding: 2rem; border-radius: 8px; max-width: 400px; margin: auto; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    input, button { width: 100%; padding: 0.7rem; margin-top: 1rem; }
+    .message { margin-top: 1rem; color: green; }
+    .error { margin-top: 1rem; color: red; }
+    code { background: #eee; padding: 0.5rem; display: block; margin-top: 1rem; word-wrap: break-word; }
+  </style>
+</head>
+<body>
+  <div class="form-box">
+    <h2>Multi-tenant Login</h2>
+    <form id="authForm">
+      <input type="text" id="username" placeholder="Username" required />
+      <input type="password" id="password" placeholder="Password" required />
+      <button type="submit">Login</button>
+      <button type="button" onclick="register()">Register</button>
+    </form>
+    <div class="message" id="message"></div>
+    <div class="error" id="error"></div>
+    <code id="tokenDisplay"></code>
+  </div>
+
+  <script>
+    const form = document.getElementById("authForm");
+    const msg = document.getElementById("message");
+    const err = document.getElementById("error");
+    const tokenBox = document.getElementById("tokenDisplay");
+
+    form.onsubmit = async function (e) {
+      e.preventDefault();
+      err.textContent = "";
+      msg.textContent = "";
+      tokenBox.textContent = "";
+
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+
+      try {
+        const res = await fetch("/api/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+          err.textContent = data.error || "Login failed.";
+          return;
+        }
+
+        // ✅ Store token
+        localStorage.setItem("token", data.access_token);
+
+        // ✅ Display token (optional)
+        tokenBox.textContent = data.access_token;
+
+        // ✅ Redirect to dashboard
+        window.location.href = "/dashboard";
+      } catch (e) {
+        err.textContent = "Something went wrong.";
+      }
+    };
+
+    async function register() {
+      err.textContent = "";
+      msg.textContent = "";
+      tokenBox.textContent = "";
+
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+
+      try {
+        const res = await fetch("/api/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+          err.textContent = data.error || "Registration failed.";
+          return;
+        }
+
+        msg.textContent = "Registration successful! You can now log in.";
+      } catch (e) {
+        err.textContent = "Something went wrong.";
+      }
+    }
+  </script>
+</body>
+</html>

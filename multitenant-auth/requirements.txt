@@ -1,0 +1,9 @@
+# requirements.txt
+Flask
+flask-cors
+PyJWT
+pymongo
+redis
+python-dotenv
+requests
+python-jose[cryptography]

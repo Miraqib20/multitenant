@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard</title>
+  <style>
+    body { font-family: Arial; padding: 2rem; background: #f4f4f4; }
+    .dashboard-box {
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      max-width: 500px;
+      margin: auto;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    h2 { color: #333; }
+    button {
+      margin-top: 1.5rem;
+      padding: 0.6rem 1.2rem;
+      font-size: 1rem;
+      background: #ff4d4f;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #e04345;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-box">
+    <h2>Welcome to Your Dashboard</h2>
+    <p id="welcomeMessage">Loading user info...</p>
+    <button id="logoutBtn">Logout</button>
+  </div>
+
+  <script>
+    const baseUrl = window.location.origin;
+    const token = localStorage.getItem("token");
+    const welcomeEl = document.getElementById("welcomeMessage");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    // Redirect to login if no token
+    if (!token) {
+      window.location.href = baseUrl + "/";
+    }
+
+    // Fetch user info from /api/dashboard
+    fetch(baseUrl + "/api/dashboard", {
+      headers: {
+        "Authorization": "Bearer " + token
+      }
+    })
+    .then(async (res) => {
+      if (!res.ok) throw new Error("Unauthorized");
+      const data = await res.json();
+      welcomeEl.innerText = data.message || "Welcome!";
+    })
+    .catch(() => {
+      localStorage.removeItem("token");
+      window.location.href = baseUrl + "/";
+    });
+
+    // Logout handler
+    logoutBtn.onclick = () => {
+      localStorage.removeItem("token");
+      window.location.href = baseUrl + "/";
+    };
+  </script>
+</body>
+</html>

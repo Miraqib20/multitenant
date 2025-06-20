@@ -1,0 +1,97 @@
+Instructions to start the local server. 
+Step-by-step guide to start your multitenant Flask app using client1.localhost and client2.localhost on your local machine:
+
+✅ Step 1: Set Up hosts File
+Open Notepad as Administrator
+
+Open this file:
+
+makefile
+Copy
+Edit
+C:\Windows\System32\drivers\etc\hosts
+Add these lines at the bottom:
+
+Copy
+Edit
+127.0.0.1   client1.localhost
+127.0.0.1   client2.localhost
+Save and close the file.
+
+✅ Step 2: Create and Activate Virtual Environment
+In your terminal:
+
+bash
+Copy
+Edit
+cd C:\multitenant-auth
+python -m venv .venv
+.\.venv\Scripts\activate
+✅ Step 3: Install Dependencies
+Make sure you have a requirements.txt and run:
+
+bash
+Copy
+Edit
+pip install -r requirements.txt
+If python-jose is not listed, add this:
+
+css
+Copy
+Edit
+python-jose[cryptography]
+Then run:
+
+bash
+Copy
+Edit
+pip install "python-jose[cryptography]"
+✅ Step 4: Ensure Your app.py Has the Correct SERVER_NAME
+In app.py, this line should look like:
+
+python
+Copy
+Edit
+app.config["SERVER_NAME"] = "localhost:5000"
+This allows subdomain routing like client1.localhost.
+
+Also, your route should fallback to the subdomain:
+
+python
+Copy
+Edit
+@app.route("/", subdomain="<tenant>")
+@app.route("/", defaults={"tenant": None})
+def index(tenant):
+    if DEV_MODE and not tenant:
+        tenant = request.host.split('.')[0]  # extract client1 or client2
+    ...
+✅ Step 5: Start the Flask App
+In your terminal (after activating .venv):
+
+bash
+Copy
+Edit
+python app.py
+You should see something like:
+
+csharp
+Copy
+Edit
+[INFO] Starting app on http://client1.localhost:5000 (DEV_MODE=True)
+✅ Step 6: Open in Browser
+Now you can access:
+
+http://client1.localhost:5000
+
+http://client2.localhost:5000
+
+Each will route to its own tenant DB (client1_db, client2_db).
+
+✅ Optional: Seed Test Users
+If you have a seed_users.py file:
+
+bash
+Copy
+Edit
+python seed_users.py
